@@ -13,27 +13,37 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class TPBorder extends JavaPlugin implements Listener {
 
-    private double borderRadius = 100; // デフォルト値
+    // 四角形のボーダーの幅（中心からの距離）
+    private double borderRangeX = 10000;
+    private double borderRangeZ = 10000;
 
     @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
-        borderRadius = getConfig().getDouble("border-radius", 100);
+        borderRangeX = getConfig().getDouble("border-range-x", 100);
+        borderRangeZ = getConfig().getDouble("border-range-z", 100);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("setborder")) {
-            if (args.length != 1) {
-                sender.sendMessage("§c使い方: /setborder <半径>");
+            if (args.length == 0) {
+                // 引数なし → 現在の範囲を表示
+                sender.sendMessage(String.format("§a現在のボーダー範囲: X方向 ±%.1f, Z方向 ±%.1f", borderRangeX, borderRangeZ));
+                return true;
+            }
+            if (args.length != 2) {
+                sender.sendMessage("§c使い方: /setborder <X方向の距離> <Z方向の距離>");
                 return true;
             }
             try {
-                borderRadius = Double.parseDouble(args[0]);
-                getConfig().set("border-radius", borderRadius);
+                borderRangeX = Double.parseDouble(args[0]);
+                borderRangeZ = Double.parseDouble(args[1]);
+                getConfig().set("border-range-x", borderRangeX);
+                getConfig().set("border-range-z", borderRangeZ);
                 saveConfig();
-                sender.sendMessage("§aボーダー半径を " + borderRadius + " に設定しました。");
+                sender.sendMessage("§aボーダー範囲を X: " + borderRangeX + " , Z: " + borderRangeZ + " に設定しました。");
             } catch (NumberFormatException e) {
                 sender.sendMessage("§c数字を入力してください。");
             }
@@ -54,11 +64,15 @@ public class TPBorder extends JavaPlugin implements Listener {
         World world = player.getWorld();
         Location spawn = world.getSpawnLocation();
 
-        double dx = to.getX() - spawn.getX();
-        double dz = to.getZ() - spawn.getZ();
-        double distance = Math.sqrt(dx * dx + dz * dz);
+        double x = to.getX();
+        double z = to.getZ();
 
-        if (distance > borderRadius) {
+        double minX = spawn.getX() - borderRangeX;
+        double maxX = spawn.getX() + borderRangeX;
+        double minZ = spawn.getZ() - borderRangeZ;
+        double maxZ = spawn.getZ() + borderRangeZ;
+
+        if (x < minX || x > maxX || z < minZ || z > maxZ) {
             player.teleport(spawn);
             player.sendMessage("§cワールドボーダーの外には行けません！");
         }
