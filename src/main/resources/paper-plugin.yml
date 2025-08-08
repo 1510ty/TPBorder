@@ -1,0 +1,15 @@
+name: BorderPlugin
+main: com.mc1510ty.TPBorder.TPBorder
+version: 1.0.0
+api-version: 1.21
+
+commands:
+  setborder:
+    description: ワールドボーダーの半径を設定します
+    usage: /setborder <半径>
+    permission: borderplugin.set
+    aliases: []
+permissions:
+  borderplugin.set:
+    description: ボーダーを設定できる権限
+    default: op
